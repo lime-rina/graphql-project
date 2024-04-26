@@ -1,5 +1,5 @@
 import passport from "passport";
-import bycrpt from "bycript";
+import bcrypt from "bcryptjs";
 
 import User from "../models/user.model.js";
 
@@ -28,7 +28,7 @@ export const configurePassport = async () => {
           throw new Error("Invalid username or password");
         }
 
-        const validPassword = await bycrpt.compare(password, user.password);
+        const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
           throw new Error("Wrong password");
         }

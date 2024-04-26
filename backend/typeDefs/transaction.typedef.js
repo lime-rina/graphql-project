@@ -40,4 +40,6 @@ type Mutation{
 }
 `;
 
+//TODO => ADD CATEGORY STATISTICS QUERY
+
 export default transactionTypeDef;
