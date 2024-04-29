@@ -19,63 +19,50 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const HomePage = () => {
   ChartJS.register(ArcElement, Tooltip, Legend);
 
-  // const chartData = {
-  //   labels: ["Saving", "Expense", "Investment"],
-  //   datasets: [
-  //     {
-  //       label: "%",
-  //       data: [13, 8, 3],
-  //       backgroundColor: [
-  //         "rgba(75, 192, 192)",
-  //         "rgba(255, 99, 132)",
-  //         "rgba(54, 162, 235)",
-  //       ],
-  //       borderColor: [
-  //         "rgba(75, 192, 192)",
-  //         "rgba(255, 99, 132)",
-  //         "rgba(54, 162, 235, 1)",
-  //       ],
-  //       borderWidth: 1,
-  //       borderRadius: 30,
-  //       spacing: 10,
-  //       cutout: 130,
-  //     },
-  //   ],
-  // };
-  const { data } = useQuery(GET_TRANSACTION_STATISTICS);
-  const { data: authUserData } = useQuery(GET_AUTHENTICATED_USER);
-  const { data: transactionsData } = useQuery(GET_TRANSACTIONS);
-
-  const [logout, { loading }] = useMutation(LOG_OUT, {
-    refetchQueries: ["GetAuthenticatedUser"],
-  });
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message);
-    }
-  };
-
-  const [chartData, setChartData] = useState({
-    labels: [],
+  const defaultChartData = {
+    labels: ["Saving", "Expense", "Investment"],
     datasets: [
       {
-        label: "$",
-        data: [],
-        backgroundColor: [],
-        borderColor: [],
+        label: "%",
+        data: [13, 8, 3],
+        backgroundColor: [
+          "rgba(75, 192, 192)",
+          "rgba(255, 99, 132)",
+          "rgba(54, 162, 235)",
+        ],
+        borderColor: [
+          "rgba(75, 192, 192)",
+          "rgba(255, 99, 132)",
+          "rgba(54, 162, 235, 1)",
+        ],
         borderWidth: 1,
         borderRadius: 30,
         spacing: 10,
         cutout: 130,
       },
     ],
+  };
+  const { data } = useQuery(GET_TRANSACTION_STATISTICS);
+  const { data: authUserData } = useQuery(GET_AUTHENTICATED_USER);
+  const { data: transactionsData } = useQuery(GET_TRANSACTIONS);
+
+  const [logout, { loading, client }] = useMutation(LOG_OUT, {
+    refetchQueries: ["GetAuthenticatedUser"],
   });
+  const handleLogout = async () => {
+    try {
+      await logout();
+      client.resetStore();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+  };
+
+  const [chartData, setChartData] = useState(defaultChartData);
 
   useEffect(() => {
-    if (data?.categoryStatistics) {
+    if (data?.categoryStatistics?.length > 0) {
       const categories = data.categoryStatistics.map((stat) => stat.category);
       const totalAmounts = data.categoryStatistics.map(
         (stat) => stat.totalAmount
@@ -108,6 +95,8 @@ const HomePage = () => {
           },
         ],
       }));
+    } else {
+      setChartData(defaultChartData);
     }
   }, [data]);
 

@@ -10,7 +10,9 @@ const TransactionPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [updateTransaction] = useMutation(UPDATE_TRANSACTION);
+  const [updateTransaction] = useMutation(UPDATE_TRANSACTION, {
+    refetchQueries: ["GetTransactionStatistics"],
+  });
   const handleSubmit = async (e) => {
     e.preventDefault();
     const amount = parseFloat(formData.amount);
