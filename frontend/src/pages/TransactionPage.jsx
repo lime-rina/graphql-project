@@ -1,19 +1,36 @@
-import { useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
+import { GET_TRANSACTION } from "../graphql/queries/transaction.query";
+import { useNavigate, useParams } from "react-router-dom";
+import TransactionFormSkeleton from "../components/UI/TransactionFormSkeleton";
+import toast from "react-hot-toast";
+import { UPDATE_TRANSACTION } from "../graphql/mutations/transaction.mutation";
 
 const TransactionPage = () => {
-  const [formData, setFormData] = useState({
-    description: "",
-    paymentType: "",
-    category: "",
-    amount: "",
-    location: "",
-    date: "",
-  });
+  const { id } = useParams();
+  const navigate = useNavigate();
 
+  const [updateTransaction] = useMutation(UPDATE_TRANSACTION);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("formData", formData);
+    const amount = parseFloat(formData.amount);
+    try {
+      await updateTransaction({
+        variables: {
+          input: {
+            ...formData,
+            amount,
+            transactionId: id,
+          },
+        },
+      });
+      toast.success("Transaction updated successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -22,7 +39,33 @@ const TransactionPage = () => {
     }));
   };
 
-  // if (loading) return <TransactionFormSkeleton />;
+  const { loading, data } = useQuery(GET_TRANSACTION, {
+    variables: { trnsactionId: id },
+  });
+
+  const [formData, setFormData] = useState({
+    description: data?.transaction?.description || "",
+    paymentType: data?.transaction?.paymentType || "",
+    category: data?.transaction?.category || "",
+    amount: data?.transaction?.amount || "",
+    location: data?.transaction?.location || "",
+    date: new Date(data?.transaction?.date) || "",
+  });
+
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        description: data?.transaction?.description,
+        paymentType: data?.transaction?.paymentType,
+        category: data?.transaction?.category,
+        amount: data?.transaction?.amount,
+        location: data?.transaction?.location,
+        date: new Date(+data.transaction.date).toISOString().substr(0, 10),
+      });
+    }
+  }, [data]);
+
+  if (loading) return <TransactionFormSkeleton />;
 
   return (
     <div className="h-screen max-w-4xl mx-auto flex flex-col items-center">

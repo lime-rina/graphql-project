@@ -13,6 +13,7 @@ type Transaction{
 type Query{
     transactions: [Transaction!]
     transaction(trnsactionId:ID!): Transaction
+    categoryStatistics: [CategoryStatistics!]
 }
 
 input CreateTransactionInput{
@@ -38,8 +39,11 @@ type Mutation{
     updateTransaction(input:UpdateTransactionInput):Transaction!
     deleteTransaction(trnsactionId:ID!):Transaction!
 }
-`;
 
-//TODO => ADD CATEGORY STATISTICS QUERY
+type CategoryStatistics {
+    category: String!
+    totalAmount: Float!
+  }
+`;
 
 export default transactionTypeDef;

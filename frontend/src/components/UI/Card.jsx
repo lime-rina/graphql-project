@@ -5,8 +5,10 @@ import { FaSackDollar } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { HiPencilAlt } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { useQuery } from "@apollo/client";
-import { GET_AUTHENTICATED_USER } from "../../graphql/queries/user.query";
+import { datePipe } from "../../utils/pipes";
+import { useMutation } from "@apollo/client";
+import { DELETE_TRANSACTION } from "../../graphql/mutations/transaction.mutation";
+import toast from "react-hot-toast";
 
 const categoryColorMap = {
   saving: "from-green-700 to-green-400",
@@ -15,43 +17,57 @@ const categoryColorMap = {
   // Add more categories and corresponding color classes as needed
 };
 
-const Card = ({ cardType }) => {
-  const { data: authUserData } = useQuery(GET_AUTHENTICATED_USER);
+const Card = ({ transaction, userPicture, ...props }) => {
+  const cardClass = categoryColorMap[transaction.category];
 
-  const cardClass = categoryColorMap[cardType];
+  const [deleteTransaction] = useMutation(DELETE_TRANSACTION, {
+    refetchQueries: ["GetTransactions"],
+  });
 
+  const handleDelete = async () => {
+    try {
+      await deleteTransaction({ variables: { trnsactionId: transaction._id } });
+      toast.success("Transaction deleted!");
+    } catch (err) {
+      toast.error("Transaction COULDN'T be deleted!");
+    }
+  };
   return (
     <div className={`rounded-md p-4 bg-gradient-to-br ${cardClass}`}>
       <div className="flex flex-col gap-3">
         <div className="flex flex-row items-center justify-between">
-          <h2 className="text-lg font-bold text-white">Saving</h2>
+          <h2 className="text-lg font-bold text-white">
+            {transaction.category}
+          </h2>
           <div className="flex items-center gap-2">
-            <FaTrash className={"cursor-pointer"} />
-            <Link to={`/transaction/123`}>
+            <FaTrash className={"cursor-pointer"} onClick={handleDelete} />
+            <Link to={`/transaction/${transaction._id}`}>
               <HiPencilAlt className="cursor-pointer" size={20} />
             </Link>
           </div>
         </div>
         <p className="text-white flex items-center gap-1">
           <BsCardText />
-          Description: Salary
+          Description: {transaction.description}
         </p>
         <p className="text-white flex items-center gap-1">
           <MdOutlinePayments />
-          Payment Type: Cash
+          Payment Type: {transaction.paymentType}
         </p>
         <p className="text-white flex items-center gap-1">
           <FaSackDollar />
-          Amount: $150
+          Amount: ${transaction.amount}
         </p>
         <p className="text-white flex items-center gap-1">
           <FaLocationDot />
-          Location: New York
+          Location: {transaction.location || "N/A"}
         </p>
         <div className="flex justify-between items-center">
-          <p className="text-xs text-black font-bold">21 Sep, 2001</p>
+          <p className="text-xs text-black font-bold">
+            {datePipe(transaction.date)}
+          </p>
           <img
-            src={authUserData?.authUser?.profilePicture}
+            src={userPicture}
             className="h-8 w-8 border rounded-full"
             alt=""
           />
