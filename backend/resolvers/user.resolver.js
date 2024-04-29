@@ -44,6 +44,7 @@ const userResolver = {
           username,
           password,
         });
+
         await context.login(user);
       } catch (err) {
         console.error(err);
@@ -54,11 +55,11 @@ const userResolver = {
       try {
         await context.logout();
 
-        req.session.destroy((err) => {
+        context.req.session.destroy((err) => {
           if (err) throw err;
         });
 
-        res.clearCookie("connect.sid");
+        context.res.clearCookie("connect.sid");
 
         return { message: "Logged out successfully" };
       } catch (err) {

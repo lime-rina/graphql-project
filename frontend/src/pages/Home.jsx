@@ -4,6 +4,10 @@ import { Doughnut } from "react-chartjs-2";
 import { MdLogout } from "react-icons/md";
 import TransactionForm from "../components/UI/TransactionForm";
 import Cards from "../components/UI/Cards";
+import { useMutation, useQuery } from "@apollo/client";
+import { LOG_OUT } from "../graphql/mutations/user.mutation";
+import toast from "react-hot-toast";
+import { GET_AUTHENTICATED_USER } from "../graphql/queries/user.query";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -32,11 +36,18 @@ const HomePage = () => {
     ],
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
+  const { data: authUserData } = useQuery(GET_AUTHENTICATED_USER);
+  const [logout, { loading }] = useMutation(LOG_OUT, {
+    refetchQueries: ["GetAuthenticatedUser"],
+  });
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
   };
-
-  const loading = false;
 
   return (
     <>
@@ -46,7 +57,7 @@ const HomePage = () => {
             Spend wisely, track wisely
           </p>
           <img
-            src={"https://tecdn.b-cdn.net/img/new/avatars/2.webp"}
+            src={authUserData?.authUser?.profilePicture}
             className="w-11 h-11 rounded-full border cursor-pointer"
             alt="Avatar"
           />

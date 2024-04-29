@@ -6,9 +6,9 @@ import User from "../models/user.model.js";
 import { GraphQLLocalStrategy } from "graphql-passport";
 
 export const configurePassport = async () => {
-  passport.serializeUser((user, done) => {
+  passport.serializeUser(({ user }, done) => {
     console.log("Serializing user");
-    done(null, user._id);
+    done(null, user.id);
   });
 
   passport.deserializeUser(async (id, done) => {
@@ -32,6 +32,7 @@ export const configurePassport = async () => {
         if (!validPassword) {
           throw new Error("Wrong password");
         }
+        return done(null, user);
       } catch (err) {
         return done(err);
       }
