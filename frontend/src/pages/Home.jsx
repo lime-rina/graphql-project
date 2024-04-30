@@ -130,10 +130,7 @@ const HomePage = () => {
           <TransactionForm />
         </div>
 
-        <Cards
-          transactions={transactionsData?.transactions}
-          userPicture={authUserData?.authUser?.profilePicture}
-        />
+        <Cards userPicture={authUserData?.authUser?.profilePicture} />
       </div>
     </>
   );
